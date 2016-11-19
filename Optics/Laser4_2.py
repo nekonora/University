@@ -55,22 +55,23 @@ def poly_fit(x, y, degree):
 	return results
 
 # Result Printer
-def print_results(values, names) :
+def print_results(array) :
 	print("\n")
 	title = "| "
 	tableLine = "|"
-	for i in names :
-		title += i
+	valuesArray = []
+	for i in array :
+		title += i.name
 		title += " |"
 		tableLine += "---|"
+		valuesArray.append(i.value)
 	print(title)
 	print(tableLine)
-	for row in zip(*values) :
+	for row in zip(*valuesArray) :
 		tableText = "|"
 		for i in range(len(row)) :
 			tableText += " {:.3f} |"
 		print(tableText.format(*row))
-	print("\n")
 
 # Constants -----------------------------------------------------------------------------
 #
@@ -110,10 +111,6 @@ d = misura(value= _d, name= "$d$")
 theta_i = misura(value= _theta_i, name="$\\theta_i$")
 Dx = misura(value= _Dx, name= "$\\Delta x$")
 
-# Un array con tutte le misure
-varArrayValues = [L.value, y.value, theta_i.value, l.value, Dx.value, DTheta.value, d.value]
-varArrayNames = [L.name, y.name, theta_i.name, l.name, Dx.name, DTheta.name, d.name]
-
 #fitLine = poly_fit(x,y,1)
 
 # Errors -------------------------------------------------------------------------------
@@ -126,7 +123,8 @@ varArrayNames = [L.name, y.name, theta_i.name, l.name, Dx.name, DTheta.name, d.n
 # Results ------------------------------------------------------------------------------
 #
 #
-print_results(varArrayValues, varArrayNames)
+#print_results(varArrayValues, varArrayNames)
+print_results([L, y, theta_i, l, Dx, DTheta, d])
 
 #print("\nMedia indice: {}".format(np.mean(index)))
 #print("R^2: {}\n".format(fitLine[2]))
