@@ -1,25 +1,25 @@
 ###########################################################################################
-#    _ _             ___                               _             _                  _ _   
-#  _| | |_     ___  / __|  _  _   _ __   ___   _ _    | |     __ _  | |__     ___     _| | |_ 
+#    _ _             ___                               _             _                  _ _
+#  _| | |_     ___  / __|  _  _   _ __   ___   _ _    | |     __ _  | |__     ___     _| | |_
 # |_  .  _|   |___| \__ \ | || | | '_ \ / -_) | '_|   | |__  / _` | | '_ \   |___|   |_  .  _|
 # |_     _|         |___/  \_,_| | .__/ \___| |_|     |____| \__,_| |_.__/           |_     _|
-# __|_|_|                  _     |_|                                                   |_|_|  
-# \ \ / /  ___   __   __  | |_   (_)                                                          
-#  \ V /  / -_) / _| / _| | ' \  | |                                                          
-#  _\_/   \___| \__| \__| |_||_| |_|   _   _          _                                       
-# | _ \  ___   _ __    ___   _ _    __| | (_)  _ _   (_)                                      
-# |   / / -_) | '  \  / _ \ | ' \  / _` | | | | ' \  | |                                      
-# |_|_\ \___| |_|_|_| \___/ |_||_| \__,_|_|_| |_||_| |_|                                      
-# |_  /  __ _   / _|  / _|  ___   _ _   (_)                                                   
-#  / /  / _` | |  _| |  _| / _ \ | ' \  | |                                                   
-# /___| \__,_| |_|   |_|   \___/ |_||_| |_|                                                   
+# __|_|_|                  _     |_|                                                   |_|_|
+# \ \ / /  ___   __   __  | |_   (_)
+#  \ V /  / -_) / _| / _| | ' \  | |
+#  _\_/   \___| \__| \__| |_||_| |_|   _   _          _
+# | _ \  ___   _ __    ___   _ _    __| | (_)  _ _   (_)
+# |   / / -_) | '  \  / _ \ | ' \  / _` | | | | ' \  | |
+# |_|_\ \___| |_|_|_| \___/ |_||_| \__,_|_|_| |_||_| |_|
+# |_  /  __ _   / _|  / _|  ___   _ _   (_)
+#  / /  / _` | |  _| |  _| / _ \ | ' \  | |
+# /___| \__,_| |_|   |_|   \___/ |_||_| |_|
 ###########################################################################################
 
 import numpy as np
 import pylab as pl
 
 # Funzioni e classi -----------------------------------------------------------------------
-class misura:  
+class misura:
 	def __init__(self, value, name):
 		self.value = value
 		self.name = name
@@ -53,51 +53,67 @@ def poly_fit(x, y, degree):
 	sstot = np.sum((y - ybar)**2)    # or sum([ (yi - ybar)**2 for yi in y])
 	results[2] = ssreg / sstot
 	return results
-	
+
+# Result Printer
+def print_results(values, names) :
+	print("\n")
+	title = "| "
+	tableLine = "|"
+	for i in names :
+		title += i
+		title += " |"
+		tableLine += "---|"
+	print(title)
+	print(tableLine)
+	for row in zip(*values) :
+		tableText = "|"
+		for i in range(len(row)) :
+			tableText += " {:.3f} |"
+		print(tableText.format(*row))
+	print("\n")
+
 # Constants -----------------------------------------------------------------------------
 #
 _n_min = 22.0 - 1.0
-Lambda = 632.8 * (10E-7) 
+Lambda = 632.8 * (10E-7)
 _l = np.array([0.041] * 11)
-l = misura(value= _l, name= "l")
+l = misura(value= _l, name= "$l$")
 
 # Variables -----------------------------------------------------------------------------
 #
 #
-_L = np.array([780.0, 700.0, 630.0, 560.0, 490.0, 420.0, 380.0, 340.0, 300.0, 220.0, 150.0]) 
+_L = np.array([780.0, 700.0, 630.0, 560.0, 490.0, 420.0, 380.0, 340.0, 300.0, 220.0, 150.0])
 _Y = np.array([23.0, 21.1, 18.4, 17.0, 15.0, 12.8, 11.1, 10.5, 8.6, 6.7, 4.8])
 
-L = misura(value= _L, name="L")
-y = misura(value= _Y / 2.0, name="y")
+L = misura(value= _L, name="$L$")
+y = misura(value= _Y / 2.0, name="$y$")
 
 # Calculations -------------------------------------------------------------------------
 #
 #
 _DTheta = []
 _d = []
-_Dx = []			
+_Dx = []
 _theta_i = []
 
 for i in range(11) :
 	_Dx.append(float(_Y[i]) / _n_min)
-	
 for i in range(11) :
 	_theta_i.append(np.arctan2(_Y[i] / 2, _L[i]))
-
 for i in range(11) :
 	_DTheta.append(_Dx[i] / _L[i])
-	
 for i in range(11) :
 	_d.append(Lambda / _DTheta[i])
-	
-DTheta = misura(value= _DTheta, name= "Delta Theta")
-d = misura(value= _d, name= "d")	
-theta_i = misura(value= _theta_i, name="theta_i")
-Dx = misura(value= _Dx, name= "DeltaX")
+
+DTheta = misura(value= _DTheta, name= "$\\Delta \\theta$")
+d = misura(value= _d, name= "$d$")
+theta_i = misura(value= _theta_i, name="$\\theta_i$")
+Dx = misura(value= _Dx, name= "$\\Delta x$")
 
 # Un array con tutte le misure
-varArray = np.array([L, y, theta_i, l, Dx, DTheta, d])
-	
+varArrayValues = [L.value, y.value, theta_i.value, l.value, Dx.value, DTheta.value, d.value]
+varArrayNames = [L.name, y.name, theta_i.name, l.name, Dx.name, DTheta.name, d.name]
+
 #fitLine = poly_fit(x,y,1)
 
 # Errors -------------------------------------------------------------------------------
@@ -110,16 +126,11 @@ varArray = np.array([L, y, theta_i, l, Dx, DTheta, d])
 # Results ------------------------------------------------------------------------------
 #
 #
+print_results(varArrayValues, varArrayNames)
 
-
-
-for row in zip(L.value, y.value, theta_i.value, l.value, Dx.value, DTheta.value, d.value) :
-	print("| {:.2f} | {:.2f} | {:.2f} | {:.2f} | {:.2f} | {:.2f} | {:.2f} |".format(*row))
-	
 #print("\nMedia indice: {}".format(np.mean(index)))
 #print("R^2: {}\n".format(fitLine[2]))
 
 # Plot: crea un array con argomenti (x, y, stile linea) - stile linea: colore + "o","-","--"
 #plotArrayTheta = np.array([thetaI, Theta, "ko"])
 #plot_graf(myArray)
-
