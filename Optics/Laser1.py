@@ -29,13 +29,13 @@ class misura:
 			self.error = np.array(error * len(value))
 		else :
 			self.error = error
-		self.rad = value * np.pi / 180													### Se gradi > radianti
-		self.grad = value * 180 / np.pi													### Se rad > gradi
-		self.mean = np.mean(value)															### Media
-		self.meanErr = error / np.sqrt(len(value))							### Errore sulla media
-		self.semiMaxDisp = 0.5 * (value[-1] - value[0])					### Errore max
+		self.rad = value * np.pi / 180							### Se gradi > radianti
+		self.grad = value * 180 / np.pi							### Se rad > gradi
+		self.mean = np.mean(value)								### Media
+		self.meanErr = error / np.sqrt(len(value))				### Errore sulla media
+		self.semiMaxDisp = 0.5 * (value[-1] - value[0])			### Errore max
 		self.percRelErr = (self.semiMaxDisp / self.mean) * 100	### Errore relativo (%)
-		
+
 def err(value1, value2, type) :
 	error = []
 	if type == "sum" :
@@ -53,7 +53,7 @@ def plot_graf(*args) :
 	if args :
 		for ar in args :
 			pl.plot(ar[0], ar[1], ar[2])
-			pl.errorbar(ar[0], ar[1], ar[3], ar[4])
+			pl.errorbar(ar[0], ar[1], ar[3], ar[4], fmt=None, ecolor='k', capthick=2)
 	pl.xlabel("")
 	pl.ylabel("")
 	pl.title("")
@@ -94,7 +94,7 @@ def print_results(array) :
 			title += "$\\sigma${}|".format(i.name)
 			tableText += "$\\pm${:.1f}|"
 			valuesArray.append(i.error)
-		
+
 	print(title)
 	print(tableLine)
 	for row in zip(*valuesArray) :
@@ -157,5 +157,3 @@ plotArrayTheta = np.array([thetaI.value, Theta.value, "ko", thetaI.error, Theta.
 plotArrayThetaFit = np.array([thetaI.value, thetaI.value * fitLine[0] + fitLine[1], "k--", 0, 0])
 plotArrayThetaTheoric = np.array([thetaI.value, thetaI.value * 2, "r-", 0, 0])
 plot_graf(plotArrayTheta, plotArrayThetaFit, plotArrayThetaTheoric)
-
-

@@ -29,13 +29,13 @@ class misura:
 			self.error = np.array(error * len(value))
 		else :
 			self.error = error
-		self.rad = value * np.pi / 180													### Se gradi > radianti
-		self.grad = value * 180 / np.pi													### Se rad > gradi
-		self.mean = np.mean(value)															### Media
-		self.meanErr = error / np.sqrt(len(value))							### Errore sulla media
-		self.semiMaxDisp = 0.5 * (value[-1] - value[0])					### Errore max
+		self.rad = value * np.pi / 180							### Se gradi > radianti
+		self.grad = value * 180 / np.pi							### Se rad > gradi
+		self.mean = np.mean(value)								### Media
+		self.meanErr = error / np.sqrt(len(value))				### Errore sulla media
+		self.semiMaxDisp = 0.5 * (value[-1] - value[0])			### Errore max
 		self.percRelErr = (self.semiMaxDisp / self.mean) * 100	### Errore relativo (%)
-		
+
 def err(value1, value2, type) :
 	error = []
 	if type == "sum" :
@@ -47,7 +47,7 @@ def err(value1, value2, type) :
 	elif type == "const" :
 		for i in range(len(value1.value)) :
 			error.append(value1.error[0] * value2)
-	else :	
+	else :
 		error = 0.0
 	return error
 
@@ -56,7 +56,7 @@ def plot_graf(*args) :
 	if args :
 		for ar in args :
 			pl.plot(ar[0], ar[1], ar[2])
-			pl.errorbar(ar[0], ar[1], ar[3], ar[4])
+			pl.errorbar(ar[0], ar[1], ar[3], ar[4], fmt=None, ecolor='k', capthick=2)
 	pl.xlabel("")
 	pl.ylabel("")
 	pl.title("")
