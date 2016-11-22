@@ -55,7 +55,8 @@ def err(value1, value2, type) :
 def plot_graf(*args) :
 	if args :
 		for ar in args :
-			pl.plot(ar[0].value, ar[1].value, ar[2])
+			pl.plot(ar[0], ar[1], ar[2])
+			pl.errorbar(ar[0], ar[1], ar[3], ar[4])
 	pl.xlabel("")
 	pl.ylabel("")
 	pl.title("")
@@ -135,5 +136,5 @@ print(y.percRelErr)
 print("R^2: {}\n".format(fitLine[2]))
 
 ### Plot: crea un array con argomenti (x, y, stile linea) - stile linea: colore + "o","-","--"
-plotArray = np.array([x, y, "ko"])
+plotArray = np.array([x.value, y.value, "ko", x.error, y.error])
 plot_graf(plotArray)
