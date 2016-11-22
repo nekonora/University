@@ -53,7 +53,7 @@ def plot_graf(*args) :
 	if args :
 		for ar in args :
 			pl.plot(ar[0], ar[1], ar[2])
-			pl.errorbar(ar[0], ar[1], ar[3], ar[4], fmt=None, ecolor='k', capthick=2)
+			pl.errorbar(ar[0], ar[1], ar[3], ar[4], fmt="none", ecolor='k', capthick=2)
 	pl.xlabel("")
 	pl.ylabel("")
 	pl.title("")
