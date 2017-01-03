@@ -44,7 +44,7 @@ def plot_graf(xLabel, yLabel, *args) :
 		for ar in args :
 			pl.plot(ar[0].nominal, ar[1].nominal, ar[2])
 			if ar[3] :
-				pl.errorbar(ar[0].nominal, ar[1].nominal, ar[0].err, ar[1].err, fmt=None, ecolor='k', capthick=2)
+				pl.errorbar(ar[0].nominal, ar[1].nominal, ar[1].err, ar[0].err, fmt=None, ecolor='k', capthick=2)
 	pl.xlabel(xLabel)
 	pl.ylabel(yLabel)
 	pl.title("")
@@ -84,76 +84,65 @@ def print_results(array) :
 	print(tableLine)
 	for row in zip(*valuesArray) :
 		print(tableText.format(*row))
-
+		
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CONSTANTS ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-lam = 632.8 * (10 ** (-6))
+Lambda = 632.8E-6
+
+## Legge di riflessione
+_theta0 = ne([0.0] * 10, 1.0)
+_y = 			ne([25.0] * 10, 0.05)
+
+theta0 = 	misura(value= _theta0, name= "$\\theta_0$")
+y = 			misura(value= _y, name= "$y$")
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// VARIABLES ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-# FRAUNHOFER
-# mm, fenditura schermo
-_L = ne([770.0, 700.0, 630.0, 560.0, 490.0, 420.0, 380.0, 340.0, 300.0, 220.0, 150.0], 0.5) 
-# mm, diametro banda nera
-_d = ne([25.2, 21.3, 20.0, 17.7, 15.4, 13.2, 12.8, 10.1, 9.5, 7.1, 5.2], 0.05)   
+# Legge di riflessione
+_theta1 = ne([45,42,40,38,36,30,26,22,20,18], 1.0)
+_x = 			ne([0,2.4,4.1,5.9,7.9,14.2,19.4,25.7,30.3,34.5], 0.05)
 
-L = misura(value=_L, name="$L$ (mm)")
-d = misura(value=_d, name="$d$ (mm)")
+theta1 = 	misura(value= _theta1, name= "$\\theta '$")
+x =				misura(value= _x, name="$x$")
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CALCULATIONS ////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-_theta = []
-_D = []
-_indice = []
+# Legge di riflessione
+_thetaI =	 []
+_Theta =	 []
+_index = 	 []
+_ThetaTh = []
 
-for i in range(len(L.value)) :
-	_theta.append(atan((_d[i] / 2) / _L[i]))
-	_D.append((1.22 * lam) / unp.sin(_theta[i]))
-	_indice.append((_D[i] ** 2) / (_L[i] * lam))
-		
-theta = misura(value=_theta, name="$\\theta$ (rad)")
-D = misura(value=_D, name="$D$ (mm)")
-indice = misura(value=_indice, name="indice")
+for i in range(10) :
+	_thetaI.append(_theta1[i])
+	_Theta.append(unp.arctan2(_y[i], _x[i]) * 180 / np.pi)
+	_index.append((_thetaI[i] * 2) - _Theta[i])
+	_ThetaTh.append((_theta1[i] * 2))
+
+thetaI = 	misura(value= _thetaI, name= "$\\theta_i$")
+Theta = 	misura(value= _Theta, name="$\\Theta$")
+index = 	misura(value= _index, name="$2\\theta_i - \\Theta$")
+ThetaTh = misura(value= _ThetaTh, name= "$2 \\theta_i$")
+
+### Correlazione lineare tra due valori (x,y)
+fitLine = poly_fit(thetaI, Theta)
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// RESULTS /////////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
 
-print_results([L, d, theta, D, indice])
+### Printa il risultato in forma di tabella
+print_results([theta0, theta1, thetaI, y, x, Theta, index])
 
-# FRAUNHOFER Opzionale
-# Variabili
-# ---------
+print("\nMedia indice: {}".format(np.mean(index.nominal)))
+print("R^2: {}\n".format(fitLine[2]))
 
-# mm, fenditura schermo
-_op_L = ne([930.0, 880.0, 830.0, 780.0, 730.0, 680.0, 630.0, 580.0, 530.0, 480.0, 430.0], 0.5) 
-# mm, diametro banda nera
-_op_d = ne([7.6, 7.4, 6.8, 6.1, 5.9, 5.4, 5.0, 4.8, 4.0, 3.7, 3.5], 0.05)   
+print(Theta.err)
 
-op_L = misura(value=_op_L, name="$L$ (mm)")
-op_d = misura(value=_op_d, name="$d$ (mm)")
-
-# Calcoli
-# -------
-
-_op_theta = []
-_op_D = []
-_op_indice = []
-
-for i in range(len(op_L.value)) :
-	_op_theta.append(atan((_op_d[i] / 2) / _op_L[i]))
-	_op_D.append(((1.22 * lam) / sin(_op_theta[i])))
-	_op_indice.append((_op_D[i] ** 2) / (_op_L[i] * lam))
-	
-op_theta = misura(value= _op_theta, name="$\\theta$ (rad)")
-op_D = misura(value= _op_D, name = "$D$ (mm)")
-op_indice = misura(value=_op_indice, name="Indice")
-
-# Print
-# -----
-
-print("- - - - Diffrazione Fraunhofer (opzionale) - - - -\n")
-print_results([op_L, op_d, op_theta, op_D, op_indice])
+### Plot: crea un array con argomenti (x, y, stile linea, ShowErr)
+plotArrayTheta = np.array([thetaI, Theta, "ko", True])
+plotArrayThetaTheoric = np.array([thetaI, ThetaTh, "r-", False])
+plot_graf("$\\theta_i$", "$\\Theta$", plotArrayTheta, plotArrayThetaTheoric)

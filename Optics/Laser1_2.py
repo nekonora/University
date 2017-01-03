@@ -44,7 +44,7 @@ def plot_graf(xLabel, yLabel, *args) :
 		for ar in args :
 			pl.plot(ar[0].nominal, ar[1].nominal, ar[2])
 			if ar[3] :
-				pl.errorbar(ar[0].nominal, ar[1].nominal, ar[0].err, ar[1].err, fmt=None, ecolor='k', capthick=2)
+				pl.errorbar(ar[0].nominal, ar[1].nominal, ar[1].err, ar[0].err, fmt=None, ecolor='k', capthick=2)
 	pl.xlabel(xLabel)
 	pl.ylabel(yLabel)
 	pl.title("")
@@ -84,76 +84,67 @@ def print_results(array) :
 	print(tableLine)
 	for row in zip(*valuesArray) :
 		print(tableText.format(*row))
-
+		
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CONSTANTS ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-lam = 632.8 * (10 ** (-6))
+Lambda = 632.8E-6
+
+_h = 			ne([18.0] * 10, 0.5)
+_h1_h2o = ne([6.2] * 10, 0.5)
+_h1_ple = ne([11.75] * 10, 0.5)
+_h1_sci = ne([0] * 10, 0.5)
+
+h = 		 misura(value= _h, name= "$h$")
+h1_h2o = misura(value= _h1_h2o, name= "$h'$")
+h1_ple = misura(value= _h1_ple, name= "$h'$")
+h1_sci = misura(value= _h1_sci, name= "$h'$")
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// VARIABLES ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-# FRAUNHOFER
-# mm, fenditura schermo
-_L = ne([770.0, 700.0, 630.0, 560.0, 490.0, 420.0, 380.0, 340.0, 300.0, 220.0, 150.0], 0.5) 
-# mm, diametro banda nera
-_d = ne([25.2, 21.3, 20.0, 17.7, 15.4, 13.2, 12.8, 10.1, 9.5, 7.1, 5.2], 0.05)   
+_d = 			ne([27.8, 24.1, 20.0, 17.5, 15.2, 12.9, 11.3, 9.9, 8.1, 6.7], 0.05)
+_thetaI = ne([78.0, 76.0, 74.0, 72.0, 70.0, 68.0, 66.9, 64.0, 62.0, 60.0], 1.0)
+_l_h2o = 	ne([13.4, 12.0, 10.3, 9.2, 7.9, 7.0, 6.2, 5.5, 4.5, 3.6], 0.5)
 
-L = misura(value=_L, name="$L$ (mm)")
-d = misura(value=_d, name="$d$ (mm)")
+d = 		 misura(value= _d, name= "$d$")
+thetaI = misura(value= _thetaI, name= "$\\theta_i$")
+l_h2o =  misura(value= _l_h2o, name= "$l$")
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CALCULATIONS ////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-_theta = []
-_D = []
-_indice = []
+_thetaT_h2o = []
+_nT_h2o = []
+_index = []
+_thetaT_Th = []
 
-for i in range(len(L.value)) :
-	_theta.append(atan((_d[i] / 2) / _L[i]))
-	_D.append((1.22 * lam) / unp.sin(_theta[i]))
-	_indice.append((_D[i] ** 2) / (_L[i] * lam))
-		
-theta = misura(value=_theta, name="$\\theta$ (rad)")
-D = misura(value=_D, name="$D$ (mm)")
-indice = misura(value=_indice, name="indice")
+for i in range(len(_l_h2o)) :
+	_thetaT_h2o.append( unp.arctan2(_l_h2o[i], _h1_h2o[i]) * 180 / np.pi)
+	_nT_h2o.append( unp.sin(_thetaI[i] / 180 * np.pi) / unp.sin(_thetaT_h2o[i] / 180 * np.pi) )
+	_index.append( (1.334 - _nT_h2o[i]) / 1.334 )
+	_thetaT_Th.append(  asin( 0.749625 *  unp.sin(_thetaI[i] / 180 * np.pi) ) / np.pi * 180 ) 
+	
+thetaT_h2o = 	misura(value= _thetaT_h2o, name="$\\theta_t$")
+nT_h2o =			misura(value= _nT_h2o, name="$n_{exp}$")
+index = 			misura(value= _index, name="$(n - n_{exp}) / n$")
+thetaT_Th =		misura(value= _thetaT_Th, name="$\\theta_t$")
+
+### Correlazione lineare tra due valori (x,y)
+fitLine = poly_fit(thetaI,thetaT_h2o)
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// RESULTS /////////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
 
-print_results([L, d, theta, D, indice])
+### Printa il risultato in forma di tabella
+print_results([h, d, h1_h2o, l_h2o, thetaI, thetaT_h2o, nT_h2o, index])
 
-# FRAUNHOFER Opzionale
-# Variabili
-# ---------
+print("R^2: {}\n".format(fitLine[2]))
 
-# mm, fenditura schermo
-_op_L = ne([930.0, 880.0, 830.0, 780.0, 730.0, 680.0, 630.0, 580.0, 530.0, 480.0, 430.0], 0.5) 
-# mm, diametro banda nera
-_op_d = ne([7.6, 7.4, 6.8, 6.1, 5.9, 5.4, 5.0, 4.8, 4.0, 3.7, 3.5], 0.05)   
+print(thetaT_Th.nominal)
 
-op_L = misura(value=_op_L, name="$L$ (mm)")
-op_d = misura(value=_op_d, name="$d$ (mm)")
-
-# Calcoli
-# -------
-
-_op_theta = []
-_op_D = []
-_op_indice = []
-
-for i in range(len(op_L.value)) :
-	_op_theta.append(atan((_op_d[i] / 2) / _op_L[i]))
-	_op_D.append(((1.22 * lam) / sin(_op_theta[i])))
-	_op_indice.append((_op_D[i] ** 2) / (_op_L[i] * lam))
-	
-op_theta = misura(value= _op_theta, name="$\\theta$ (rad)")
-op_D = misura(value= _op_D, name = "$D$ (mm)")
-op_indice = misura(value=_op_indice, name="Indice")
-
-# Print
-# -----
-
-print("- - - - Diffrazione Fraunhofer (opzionale) - - - -\n")
-print_results([op_L, op_d, op_theta, op_D, op_indice])
+### Plot: crea un array con argomenti (x, y, stile linea, xErr, yErr)
+plotArray = np.array([thetaI, thetaT_h2o, "ko", True])
+plotArrayTh = np.array([thetaI, thetaT_Th, "r-", False]) 
+plot_graf("$\\theta_i$", "$\\theta_t$", plotArray, plotArrayTh)

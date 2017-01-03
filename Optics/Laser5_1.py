@@ -84,76 +84,95 @@ def print_results(array) :
 	print(tableLine)
 	for row in zip(*valuesArray) :
 		print(tableText.format(*row))
-
+				
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CONSTANTS ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-lam = 632.8 * (10 ** (-6))
+Lambda = 632.8E-6
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// VARIABLES ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-# FRAUNHOFER
-# mm, fenditura schermo
-_L = ne([770.0, 700.0, 630.0, 560.0, 490.0, 420.0, 380.0, 340.0, 300.0, 220.0, 150.0], 0.5) 
-# mm, diametro banda nera
-_d = ne([25.2, 21.3, 20.0, 17.7, 15.4, 13.2, 12.8, 10.1, 9.5, 7.1, 5.2], 0.05)   
+### Immettere valori come ne([valori], errore)
+_LCD =  ne([160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360], 0.5)
+_x1CD = ne([69, 78, 88, 97, 105, 114, 123, 132, 140, 149, 158], 0.5)
+_x2CD = ne([212, 229, 267, 292, 322, 346, 379, 401, 420, 459, 486], 0.5)
+_LDVD =  ne([290, 280, 270, 260, 250, 240, 230, 220, 210, 200, 190], 0.5)
+_xDVD = ne([482, 473, 462, 451, 428, 413, 399, 382, 359, 338, 325], 0.5)
 
-L = misura(value=_L, name="$L$ (mm)")
-d = misura(value=_d, name="$d$ (mm)")
+x1CD = misura(value= _x1CD, name="$x_1$ (mm)")
+x2CD = misura(value= _x2CD, name="$x_2$ (mm)")
+LCD =  misura(value= _LCD, name="$L$ (mm)")
+xDVD = misura(value= _xDVD, name="$x_1$ (mm)")
+LDVD =  misura(value= _LDVD, name="$L$ (mm)")
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CALCULATIONS ////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-_theta = []
-_D = []
-_indice = []
+_theta1CD = []
+_theta2CD = []
+_sin1CD = []
+_sin2CD = []
+_d1CD = []
+_d2CD = []
 
-for i in range(len(L.value)) :
-	_theta.append(atan((_d[i] / 2) / _L[i]))
-	_D.append((1.22 * lam) / unp.sin(_theta[i]))
-	_indice.append((_D[i] ** 2) / (_L[i] * lam))
+_thetaDVD = []
+_sinDVD = []
+_dDVD = []
+
+for i in range(len(LCD.value)) :
+	_theta1CD.append(atan(_x1CD[i] / _LCD[i]))
+	_theta2CD.append(atan(_x2CD[i] / _LCD[i]))
+	_sin1CD.append(sin(_theta1CD[i]))
+	_sin2CD.append(sin(_theta2CD[i]))
+	_d1CD.append(Lambda / _sin1CD[i])
+	_d2CD.append( (2 * Lambda) / _sin2CD[i])
+
+for i in range(len(LDVD.value)) :
+	_thetaDVD.append(atan(_xDVD[i] / _LDVD[i]))
+	_sinDVD.append(sin(_thetaDVD[i]))
+	_dDVD.append(Lambda / _sinDVD[i])
+	
+_d1CDSum = 0.0
+_d2CDSum = 0.0
+for i in range(11) :
+	_d1CDSum += _d1CD[i]
+	_d2CDSum += _d2CD[i]
+_d1CDMean = _d1CDSum / 11
+_d2CDMean = _d2CDSum / 11	
+_dCDMean = (_d1CDMean + _d2CDMean) / 2
+	
+_dDVDSum = 0.0
+for i in range(11) :
+	_dDVDSum += _dDVD[i]
+_dDVDMean = _dDVDSum / 11			
+	
+theta1CD = misura(value= _theta1CD, name="$\\theta_1$")
+theta2CD = misura(value= _theta2CD, name="$\\theta_2$")
+sin1CD = misura(value= _sin1CD, name="$\\sin \\theta_1$")
+sin2CD = misura(value= _sin2CD, name="$\\sin \\theta_2$")
+d1CD = misura(value= _d1CD, name="$d_1$ (mm)")
+d2CD = misura(value= _d2CD, name="$d_2$ (mm)")
 		
-theta = misura(value=_theta, name="$\\theta$ (rad)")
-D = misura(value=_D, name="$D$ (mm)")
-indice = misura(value=_indice, name="indice")
+thetaDVD = misura(value= _thetaDVD, name="$\\theta$")
+sinDVD = misura(value= _sinDVD, name="$\\sin \\theta$")
+dDVD = misura(value= _dDVD, name="$d$ (mm)")
+
+### Correlazione lineare tra due valori (x,y)
+#fitLine = poly_fit(x,y)
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// RESULTS /////////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
 
-print_results([L, d, theta, D, indice])
+### Printa il risultato in forma di tabella
+print_results([LCD, x1CD, x2CD, sin1CD, sin2CD, d1CD, d2CD])
+print(_dCDMean)
+print_results([LDVD, xDVD, sinDVD, dDVD])
+print(_dDVDMean)
 
-# FRAUNHOFER Opzionale
-# Variabili
-# ---------
+#print("R^2: {}\n".format(fitLine[2]))
 
-# mm, fenditura schermo
-_op_L = ne([930.0, 880.0, 830.0, 780.0, 730.0, 680.0, 630.0, 580.0, 530.0, 480.0, 430.0], 0.5) 
-# mm, diametro banda nera
-_op_d = ne([7.6, 7.4, 6.8, 6.1, 5.9, 5.4, 5.0, 4.8, 4.0, 3.7, 3.5], 0.05)   
-
-op_L = misura(value=_op_L, name="$L$ (mm)")
-op_d = misura(value=_op_d, name="$d$ (mm)")
-
-# Calcoli
-# -------
-
-_op_theta = []
-_op_D = []
-_op_indice = []
-
-for i in range(len(op_L.value)) :
-	_op_theta.append(atan((_op_d[i] / 2) / _op_L[i]))
-	_op_D.append(((1.22 * lam) / sin(_op_theta[i])))
-	_op_indice.append((_op_D[i] ** 2) / (_op_L[i] * lam))
-	
-op_theta = misura(value= _op_theta, name="$\\theta$ (rad)")
-op_D = misura(value= _op_D, name = "$D$ (mm)")
-op_indice = misura(value=_op_indice, name="Indice")
-
-# Print
-# -----
-
-print("- - - - Diffrazione Fraunhofer (opzionale) - - - -\n")
-print_results([op_L, op_d, op_theta, op_D, op_indice])
+### Plot: crea un array con argomenti (x, y, stile linea, xErr, yErr)
+#plotArray = np.array([LCD, d2CD, "ko", True])
+#plot_graf("$\\theta_1$", "$d_1$", plotArray)

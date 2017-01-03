@@ -44,7 +44,7 @@ def plot_graf(xLabel, yLabel, *args) :
 		for ar in args :
 			pl.plot(ar[0].nominal, ar[1].nominal, ar[2])
 			if ar[3] :
-				pl.errorbar(ar[0].nominal, ar[1].nominal, ar[0].err, ar[1].err, fmt=None, ecolor='k', capthick=2)
+				pl.errorbar(ar[0].nominal, ar[1].nominal, ar[1].err, ar[0].err, fmt=None, ecolor='k', capthick=2)
 	pl.xlabel(xLabel)
 	pl.ylabel(yLabel)
 	pl.title("")
@@ -84,76 +84,46 @@ def print_results(array) :
 	print(tableLine)
 	for row in zip(*valuesArray) :
 		print(tableText.format(*row))
-
+		
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CONSTANTS ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-lam = 632.8 * (10 ** (-6))
+Lambda = 632.8E-6
+_h = [155.0] * 10 # 0.05
+_hSCI = [39.0] * 10 # 0.05
+
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// VARIABLES ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-# FRAUNHOFER
-# mm, fenditura schermo
-_L = ne([770.0, 700.0, 630.0, 560.0, 490.0, 420.0, 380.0, 340.0, 300.0, 220.0, 150.0], 0.5) 
-# mm, diametro banda nera
-_d = ne([25.2, 21.3, 20.0, 17.7, 15.4, 13.2, 12.8, 10.1, 9.5, 7.1, 5.2], 0.05)   
-
-L = misura(value=_L, name="$L$ (mm)")
-d = misura(value=_d, name="$d$ (mm)")
+_d = [0, 10, 20, 29, 40.1, 50.3, 60.4, 70.6, 80.7, 100.3, 110.7] # +-0.5
+_thetaI = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20] # angoli in negativo +-1
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CALCULATIONS ////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-_theta = []
-_D = []
-_indice = []
+_thetaT_h2o = []
+_nT_h2o = []
 
-for i in range(len(L.value)) :
-	_theta.append(atan((_d[i] / 2) / _L[i]))
-	_D.append((1.22 * lam) / unp.sin(_theta[i]))
-	_indice.append((_D[i] ** 2) / (_L[i] * lam))
-		
-theta = misura(value=_theta, name="$\\theta$ (rad)")
-D = misura(value=_D, name="$D$ (mm)")
-indice = misura(value=_indice, name="indice")
+for i in range(len(_l_h2o)) :
+	_thetaT_h2o.append( np.arctan2(_l_h2o[i], _h1_h2o[i]))
+	_nT_h2o.append(np.sin(_thetaI[i] / np.sin(_thetaT_h2o[i])))
+
+
+thetaT_h2o = 	misura(value= _thetaT_h2o, name="$\\theta_t$", error= err(l_h2o, h1_h2o, "arctan"))
+
+### Correlazione lineare tra due valori (x,y)
+#fitLine = poly_fit(x,y,1)
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// RESULTS /////////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
 
-print_results([L, d, theta, D, indice])
+### Printa il risultato in forma di tabella
+print_results([h, d, h1_h2o, l_h2o, thetaI, thetaT_h2o])
 
-# FRAUNHOFER Opzionale
-# Variabili
-# ---------
+#print("R^2: {}\n".format(fitLine[2]))
 
-# mm, fenditura schermo
-_op_L = ne([930.0, 880.0, 830.0, 780.0, 730.0, 680.0, 630.0, 580.0, 530.0, 480.0, 430.0], 0.5) 
-# mm, diametro banda nera
-_op_d = ne([7.6, 7.4, 6.8, 6.1, 5.9, 5.4, 5.0, 4.8, 4.0, 3.7, 3.5], 0.05)   
-
-op_L = misura(value=_op_L, name="$L$ (mm)")
-op_d = misura(value=_op_d, name="$d$ (mm)")
-
-# Calcoli
-# -------
-
-_op_theta = []
-_op_D = []
-_op_indice = []
-
-for i in range(len(op_L.value)) :
-	_op_theta.append(atan((_op_d[i] / 2) / _op_L[i]))
-	_op_D.append(((1.22 * lam) / sin(_op_theta[i])))
-	_op_indice.append((_op_D[i] ** 2) / (_op_L[i] * lam))
-	
-op_theta = misura(value= _op_theta, name="$\\theta$ (rad)")
-op_D = misura(value= _op_D, name = "$D$ (mm)")
-op_indice = misura(value=_op_indice, name="Indice")
-
-# Print
-# -----
-
-print("- - - - Diffrazione Fraunhofer (opzionale) - - - -\n")
-print_results([op_L, op_d, op_theta, op_D, op_indice])
+### Plot: crea un array con argomenti (x, y, stile linea, xErr, yErr)
+#plotArray = np.array([x.value, y.value, "ko", x.error, y.error])
+#plot_graf("$\\theta_i$", "$\\Theta$", plotArray)
