@@ -23,24 +23,18 @@ import pylab as pl
 #---------------------------------------------------------------------------------------#
 class misura:
 	def __init__(self, value, name, error):
-		self.value = np.array(value, dtype= float)
+		self.value = value
 		self.name = name
 		if len(error) == 1 :
 			self.error = np.array(error * len(value))
 		else :
 			self.error = error
-<<<<<<< HEAD
-		self.mean = np.mean(value)							        	### Media
-		self.meanErr = error / np.sqrt(len(value))				### Errore sulla media
-		self.semiMaxDisp = 0.5 * (value[-1] - value[0])	  ### Errore max
-=======
 		self.rad = value * np.pi / 180							### Se gradi > radianti
 		self.grad = value * 180 / np.pi							### Se rad > gradi
 		self.mean = np.mean(value)								### Media
 		self.meanErr = error / np.sqrt(len(value))				### Errore sulla media
 		self.semiMaxDisp = 0.5 * (value[-1] - value[0])			### Errore max
 		self.percRelErr = (self.semiMaxDisp / self.mean) * 100	### Errore relativo (%)
->>>>>>> 00fad44da5cea9df89f3a69cda31253952fb1c38
 
 def err(value1, value2, type) :
 	error = []
@@ -50,27 +44,18 @@ def err(value1, value2, type) :
 	elif type == "arctan" :
 		for i in range(len(value1.value)) :
 			error.append(np.sqrt((value1.error[0] * value2.error[0]) / (value1.value[i] ** 2 + value2.value[i] ** 2)) * 180 / np.pi)
-	elif type == "const" :
-		for i in range(len(value1.value)) :
-			error.append(value1.error[0] * value2)
 	else :
 		error = 0.0
 	return error
 
 ### Plotter - prende array 2D(+ stile linea) come args
-def plot_graf(xLabel, yLabel, *args) :
+def plot_graf(*args) :
 	if args :
 		for ar in args :
 			pl.plot(ar[0], ar[1], ar[2])
-<<<<<<< HEAD
-			pl.errorbar(ar[0], ar[1], ar[3], ar[4], fmt=None, ecolor='k', capthick=2)
-	pl.xlabel(xLabel)
-	pl.ylabel(yLabel)
-=======
 			pl.errorbar(ar[0], ar[1], ar[3], ar[4], fmt="none", ecolor='k', capthick=2)
 	pl.xlabel("")
 	pl.ylabel("")
->>>>>>> 00fad44da5cea9df89f3a69cda31253952fb1c38
 	pl.title("")
 	pl.grid(True)
 	pl.show()
@@ -78,17 +63,17 @@ def plot_graf(xLabel, yLabel, *args) :
 ### Polynomial Regression - y = a+mx - restituisce un array [a,m,R^2]
 def poly_fit(x, y, degree):
 	results = np.empty(3)
-	coeffs = np.polyfit(x.value, y.value, degree)
+	coeffs = np.polyfit(x, y, degree)
 	### Polynomial Coefficients
 	results[0] = coeffs[0]
 	results[1] = coeffs[1]
 	### r-squared
 	p = np.poly1d(coeffs)
 	### fit values, and mean
-	yhat = p(x.value)
-	ybar = np.sum(y.value)/len(y.value)
+	yhat = p(x)
+	ybar = np.sum(y)/len(y)
 	ssreg = np.sum((yhat-ybar)**2)
-	sstot = np.sum((y.value - ybar)**2)    #
+	sstot = np.sum((y - ybar)**2)    #
 	results[2] = ssreg / sstot
 	return results
 
@@ -109,6 +94,7 @@ def print_results(array) :
 			title += "$\\sigma${}|".format(i.name)
 			tableText += "$\\pm${:.1f}|"
 			valuesArray.append(i.error)
+
 	print(title)
 	print(tableLine)
 	for row in zip(*valuesArray) :
@@ -118,52 +104,56 @@ def print_results(array) :
 #-/////////////////////// CONSTANTS ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
 Lambda = 632.8E-6
+_theta0 = [0.0] * 10
+_y = [25.0] * 10
 
+theta0 = 	misura(value= np.array(_theta0), name= "$\\theta_0$", error= [1.0])
+y = 			misura(value= np.array(_y), name= "$y$", error = [0.5])
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// VARIABLES ///////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-<<<<<<< HEAD
-_x = [0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0]
-x = misura(value= _x, name="$x$", error= [0.5])
-=======
-_x = [0,1,2,3,4,5,6,7,8,9]
-x = misura(value= np.array(_x), name="$x$", error= [0.5])
->>>>>>> 00fad44da5cea9df89f3a69cda31253952fb1c38
+_theta1 = [45,42,40,38,36,30,26,22,20,18]
+_x = [0,2.4,4.1,5.9,7.9,14.2,19.4,25.7,30.3,34.5]
+
+theta1 = 	misura(value= np.array(_theta1), name= "$\\theta '$", error= [1.0])
+x =				misura(value= np.array(_x), name="$x$", error= [0.5])
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// CALCULATIONS ////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
-_y = []
-for i in _x :
-	_y.append(i*2 + 5)
-<<<<<<< HEAD
-y = misura(value= _y, name="$y$", error= err(x, 2, "const"))
-=======
-y = misura(value= np.array(_y), name="$y$", error= err(x, 2, "const"))
->>>>>>> 00fad44da5cea9df89f3a69cda31253952fb1c38
+_thetaI =	 []
+_Theta =	 []
+_index = 	 []
+
+for i in range(10) :
+	_thetaI.append(_theta1[i] - _theta0[i])
+	_Theta.append(np.arctan2(_y[i], _x[i]) * 180 / np.pi)
+	_index.append((_thetaI[i] * 2) - _Theta[i])
+
+### Errori
+#errTheta = []
+#for i in _x :
+#	errTheta.append(np.sqrt((0.025) / (x.value[i] ** 2 + y.value[i] ** 2)) * 180 / np.pi)
+
+thetaI = 	misura(value= np.array(_thetaI), name= "$\\theta_i$", error= err(theta1, theta0, "sum"))
+Theta = 	misura(value= np.array(_Theta), name="$\\Theta$", error= err(x, y, "arctan"))
+index = 	misura(value= np.array(_index), name="$2\\theta_i - \\Theta$", error= [0.0])
 
 ### Correlazione lineare tra due valori (x,y)
-fitLine = poly_fit(x,y,1)
+fitLine = poly_fit(thetaI.value,Theta.value, 1)
 
 #---------------------------------------------------------------------------------------#
 #-/////////////////////// RESULTS /////////////////////////////////////////////////////-#
 #---------------------------------------------------------------------------------------#
 
 ### Printa il risultato in forma di tabella
-print_results([x, y])
+print_results([theta0, theta1, thetaI, y, x, Theta, index])
 
-<<<<<<< HEAD
-print("R^2: {}\n".format(fitLine[2]))
-
-### Plot: crea un array con argomenti (x, y, stile linea, xErr, yErr)
-plotArray = np.array([x.value, y.value, "ko", x.error, y.error])
-plot_graf("$\\theta_i$", "$\\Theta$", plotArray)
-=======
-print(y.percRelErr)
-
+print("\nMedia indice: {}".format(index.mean))
 print("R^2: {}\n".format(fitLine[2]))
 
 ### Plot: crea un array con argomenti (x, y, stile linea) - stile linea: colore + "o","-","--"
-plotArray = np.array([x.value, y.value, "ko", x.error, y.error])
-plot_graf(plotArray)
->>>>>>> 00fad44da5cea9df89f3a69cda31253952fb1c38
+plotArrayTheta = np.array([thetaI.value, Theta.value, "ko", thetaI.error, Theta.error])
+plotArrayThetaFit = np.array([thetaI.value, thetaI.value * fitLine[0] + fitLine[1], "k--", 0, 0])
+plotArrayThetaTheoric = np.array([thetaI.value, thetaI.value * 2, "r-", 0, 0])
+plot_graf(plotArrayTheta, plotArrayThetaFit, plotArrayThetaTheoric)
